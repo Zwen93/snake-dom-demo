@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>snake-dom</title>
+	<meta charset="utf-8">
+	<style type="text/css">
+		body{
+			text-align: center;
+			background-color: #ccc;
+		}
+		#wrapper{
+			width:300px;
+			height:300px;
+			margin:0 auto; 			
+			line-height: 0;
+			border:3px solid brown;
+		}
+		span{
+			display: inline-table;
+			width:30px;
+			height:30px;
+			background-color:#CCC;
+		}
+		.fruit{
+			background-color: green;
+			border-radius:15px;
+		}
+		.snakehead{
+			background-color: #33CCCC;
+			border-radius:15px;
+		}
+		.snakebody{
+			background-color: #006363;
+			border-radius:10px;
+		}
+		#start{
+			margin:10px auto;
+			text-align:center;
+
+		}
+		#start_button{
+			width:45px;
+			height:35px;
+			line-height:35px;
+			margin-right:20px;
+			border-radius:10px;
+			font-size:16px;
+			vertical-align: middle;
+			background-color: #ccc;
+		}
+		#init_button{
+			width:45px;
+			height:35px;
+			line-height:35px;
+			margin-left:20px;
+			border-radius:10px;
+			font-size:16px;
+			vertical-align: middle;
+			background-color: #ccc;
+		}
+		#control{
+			width:300px;
+			margin:0 auto;
+			text-align:center;
+		}
+		#control>button{
+			width:40px;
+			height:40px;
+			background-color: yellow;
+		}
+		#up{
+			display: block;
+			margin:0 auto;
+		}
+		#left{
+			display: inline-block;
+			margin:10px 30px 10px 30px;
+		}
+		#right{
+			display:inline-block;
+			margin:10px 30px 10px 30px;
+		}
+		#down{
+			display: block;
+			margin:0 auto;
+		}
+	</style>
+	<script type="text/javascript">
+		function snake_dom(){
+				// comments are all bug code or test code
+
+			var direction = ["up","right","down","left"];
+			var fruit = {};
+			var snake = new Array();
+			var directionnow = "";
+			var timer;
+			var running = false;
+			
+			//some calculator functions or tools 
+			//计算用函数			
+			
+
+			//get a random number between 1 and 10,use it to get a random object with properties of "row" and "col"
+			//随机生成0-10，随机生成row col属性对象
+			var random = function(){return Math.ceil(Math.random()*10);}
+			var indexrandom = function(){
+				var row = random();
+				var col = random();
+				return {"row":row,"col":col};
+			}
+
+
+			//accroding to the passed object,search for matched dom elements and return them(a tool being used below)
+			//根据传入的对象index查找并返回相对应的方块对象
+			var search = function(index){
+				var row = index.row;
+				var col = index.col;
+				var result = [];
+				var square = document.getElementsByTagName("span");
+				for(var i=0;i<square.length;i++){
+					var squ = square[i];
+					if(squ.getAttribute('data-index-row')==row&&squ.getAttribute('data-index-col')==col){
+						return squ;
+					}
+				}
+			};
+
+
+
+			//used in the snakecreate function to compute matched snake-tail index
+			var tailcom = function(head,dir){
+				var tail,newrow,newcol;
+				var headrow = head.row;
+				var headcol = head.col;
+				switch(dir){
+					case "up": newrow = headrow+1;newcol = headcol;break;
+					case "right": newrow = headrow;newcol = headcol-1;break;
+					case "down": newrow = headrow-1;newcol = headcol;break;
+					case "left": newrow = headrow;newcol = headcol+1;break;
+				}
+				//console.log(newrow,newcol);
+				tail = {"row":newrow,"col":newcol};
+				return tail;
+			};
+			//used in snakemove function to compute matched next moved snake-head index
+			var newheadcom = function(oldhead,dir){
+				var newhead,newrow,newcol;
+				var row = oldhead.row;
+				var col = oldhead.col;
+				switch(dir){
+					case "up":newrow = row-1;newcol=col;break;
+					case "right":newrow=row;newcol=col+1;break;
+					case "down":newrow=row+1;newcol=col;break;
+					case "left":newrow=row;newcol=col-1;break;
+				}
+				newhead = {"row":newrow,"col":newcol};
+				return newhead;
+			};
+
+
+
+			//indexof判断无效，使用这个函数判断数组是否包含指导对象
+			//a function to replace indexOf
+			var container = function(wrapper,container){
+				var wrap = wrapper;
+				for(var i=0;i<wrap.length;i++){
+					var wr = wrap[i];
+					if(wr.row===container.row&&wr.col===container.col){
+						return true;
+					}
+				}
+			};
+
+
+			//these are main proccess function 
+			//主要处理函数
+
+
+			//create something like table-dom with index of rows and cols
+			var init = function(){
+				//var square = document.createElement("div");
+				var wrapper = document.getElementById('wrapper');
+				for(var i=0;i<100;i++){
+					var square = document.createElement("span");
+					square.setAttribute('data-index-row',Math.floor(i/10)+1);
+					square.setAttribute('data-index-col',Math.floor(i%10)+1);
+					wrapper.appendChild(square);
+				}
+			};
+
+			
+			//create a new snake and show it,in random index and direction
+			//利用随机的坐标参数和方向参数生成snake
+			var snakecreate = function(){
+				// var dnindex = Math.floor(Math.random()*4);
+				// var dir = direction[dnindex];
+				// var head = indexrandom();
+
+				// var tail = tailcom(head,dir);
+				// var row = tail.row;
+				// var col = tail.col;
+				// if(row>=3&&row<=7&&col>=3&&col<=7){
+					
+				// 	console.log(typeof(snake));
+				// 	console.log(snake);
+				// 	search(head).className = "snakehead";
+				// 	search(tail).className = "snakebody";
+				// 	snake.push(head);
+				// 	snake.push(tail);
+				// 	directionnow = dir;
+				// 	console.log(directionnow);
+				// }
+				// else{snakecreate();}
+				snake = [];
+				directionnow = "";
+				function filter(){
+					var index = indexrandom();
+					var result;
+					if(index.row>=3&&index.row<=8&&index.col>=3&&index.col<=8){
+						result = index;
+					}
+					else {result = filter()}
+					return result;
+
+				}
+				var head = filter();
+				var dnindex = Math.floor(Math.random()*4);
+				var dir = direction[dnindex];
+				directionnow = dir;
+				var tail = tailcom(head,dir);
+				search(head).className = "snakehead";
+				search(tail).className = "snakebody";
+				snake.push(head);
+				snake.push(tail);
+				//console.log(snake);
+				//console.log(snake[0]);
+				//setTimeout(snakemove,5000);
+			};
+
+
+			//生成果实index并显示
+			//create some random fruits for eating,show it,only one exsits at th same time
+			var fruitcreate = function(){
+				fruit = {};
+				if(document.getElementsByClassName('fruit')){
+					var fr = document.getElementsByClassName("fruit");
+					for(var i = 0;i<fr.length;i++){
+						fr[i].className = "";
+					}
+				}
+				var index = indexrandom();
+				if(container(snake,index)){
+					fruitcreate();
+				}
+				else{
+					fruit = index;
+					console.log(fruit);
+					search(index).className = "fruit";
+				}
+			};
+
+
+
+			//处理并显示蛇的运动
+			//deal with all the moving stations
+			var snakemove = function(){
+				
+				//console.log(snake);
+				//console.log(snake[0]);
+				var newhead = newheadcom(snake[0],directionnow);
+				//console.log(newhead);
+				var row = newhead.row;
+				var col = newhead.col;
+				//snake.unshift(newhead);
+				if(row<1||row>10||col<1||col>10||container(snake,newhead)){  //碰壁或碰到身体，游戏结束
+					alert("game over");
+					clearInterval(timer);
+				}
+				else{
+					snake.unshift(newhead);
+					if(row===fruit.row&&col===fruit.col){       //吃到水果，重新生成水果，并且不移除原尾部
+						console.log("eat",snake);
+						fruitcreate();
+					}
+					else{
+						snake.pop();
+						console.log('noteat',snake);
+					}
+					//snakeshow();
+				}
+				snakeshow();
+				// snake.pop(); 
+				// console.log(typeof(snake));
+				// console.log(snake[0]);  //删除原来蛇尾坐标
+				// //var row = snake[0].row;
+				// //var col = snake[0].col;
+				// var newhead = newheadcom(snake[0],directionnow);
+				
+				// console.log(newhead);
+				// // snake.unshift(newhead);
+				// // console.log(snake);
+				// // var newrow = newhead.row;
+				// // var newcol = newhead.col;
+				// // if(newrow>=1&&newrow<=10&&newcol>=1&&newcol<=10&&snake.indexOf(newhead)===-1){
+
+				// // 	//snakeshow();
+				// // }
+				// // else{alert("game over");}
+			};
+
+			
+
+
+
+
+			//根据计算结果重新显示新的snake
+			//show the new snake from computed results
+			var snakeshow = function(){
+				//console.log(snake);
+				// document.getElementsByClassName('snakehead').className = '';
+				// var body = document.getElementsByClassName("snakebody");
+				// for(var i =0;i<body.length;i++){
+				// 	body[i].className = '';
+				// }
+				// search(snake[0]).className = "snakehead";
+				// for(var i=1;i<snake.length;i++){
+				// 	search(snake[i]).className = "snakebody";
+				// }
+				var span = document.getElementsByTagName("span");
+				for(var i =0;i<span.length;i++){
+					var sp = span[i];
+					if(sp.className.match(/^snake/)){
+						sp.className = "";
+					}
+				}
+				search(snake[0]).className = "snakehead";
+				for(var j=1;j<snake.length;j++){
+					search(snake[j]).className = "snakebody";
+				}
+			};
+
+			
+
+				var bind = function(){
+				// var addEvent = function(obj,eventtype,f){
+				// 	if(obj.attachEvent){
+				// 		obj.attachEvent('on'+eventtype,f);
+				// 	}
+				// 	else{
+				// 		obj.addEventListener(eventtype,f);
+				// 	}
+				// };
+				var controls = document.getElementById("control").getElementsByTagName("button");
+				for(var i=0;i<controls.length;i++){
+					//var control = controls[i];
+					console.log(controls[i]);
+					controls[i].addEventListener("click",function(e){
+						var e = e||window.event;
+						var ele = e.target||e.srcElement;
+						var dr = ele.getAttribute("id");
+						if(directionnow==="left"||directionnow==="right"){
+							if(dr==="up"||dr==="down"){
+								directionnow = dr;
+							}
+						}
+						else{
+							if(dr==="left"||dr==="right"){
+								directionnow = dr;
+							}
+						}
+					});
+				}
+				document.getElementById("init_button").addEventListener("click",clear);
+				document.getElementById("start_button").addEventListener("click",start);
+			};
+			var clear = function(){
+				snakecreate();
+				fruitcreate();
+				snakeshow();
+
+				console.log(timer,running,snake,fruit);
+				if(running){
+					clearInterval(timer);
+					running = false;
+				}
+			};
+			var start = function(){
+				if(running){
+					clearInterval(timer);
+					running = false;
+					console.log(timer,running,snake,fruit);
+				}
+				else {
+					//snakemove();
+					timer = setInterval(snakemove,800);
+					running = true;
+					console.log(timer,running,snake,fruit);
+				}
+			};
+			// var start = function(){
+			// 	init();
+			// 	snakecreate();
+			// 	console.log(snake);
+			// 	fruitcreate();
+			// 	//snakemove();
+			// 	timer = setInterval(snakemove,1000);
+			// 	bind();
+			// 	var test = container([{'row':1,"col":1},{"row":2,"col":2}],{'row':2,"col":1});
+			// 	console.log(test);
+			// };
+
+			//start();
+			init();
+			bind();
+		}       //end
+
+
+
+window.onload = function(){
+	snake_dom();
+}
+		
+	</script>
+</head>
+<body>
+      <div id="wrapper"></div>
+      <div id="start">
+      	<button id="start_button">start</button>
+      	<button id="init_button">reset</button>
+      </div>
+      <div id="control">
+      	<button id="up">↑</button>
+      	<button id="left">←</button>
+      	<button id="right">→</button>
+      	<button id="down">↓</button>
+      </div>
+      <p>When you open this page for the <strong>first time</strong>,please click the <strong>reset button</strong> at first,and then click <strong>start buttom</strong> to play!</p>
+      <p>You can also press <strong>start</strong> again to pause!</p>
+</body>
+</html>
