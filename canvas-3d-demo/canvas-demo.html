@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>canvas-3d-demo</title>
+	<style type="text/css">
+		#wrapper{margin:0 auto;width:600px;}
+	</style>
+	<script type="text/javascript">
+		
+
+		var index = new Array();
+		var param = {
+			angle:null,
+			angleSin:null,
+			angleCos:null,
+			a:0,
+			asin:null,
+			acos:null,
+			timer:null,
+			deltax:null,
+			deltay:null,
+			x:null,
+			y:null
+		};
+
+
+		function createcanvas(width,height,id){
+			var canvasElement = document.createElement("canvas");
+			//var canvasElement = document.createElement('canvas');
+			canvasElement.width = width;
+			canvasElement.height = height;
+			canvasElement.id = "test";
+			var context = canvasElement.getContext('2d');
+			context.translate(width/2,height/2);
+			document.getElementById(id).appendChild(canvasElement);
+			var cas = document.getElementById("test");
+			var rect = cas.getBoundingClientRect();
+			param.deltax = rect.left+width/2;
+			param.deltay = rect.top+height/2;
+		}
+//------------------------------------------------------------------------------------------------
+		function mouseHandler(e){
+			var e = e||window.event;
+			var dx = e.clientX-param.deltax;
+			var dy = e.clientY-param.deltay;		
+			var d = Math.sqrt(dx*dx+dy*dy);
+			param.angle = Math.atan(dx/dy);
+			param.angleSin = Math.sin(param.angle);
+			param.angleCos = Math.cos(param.angle);
+			var speed = Math.PI*d/300/90;
+			if(speed<Math.PI/480){
+				speed = Math.PI/480;
+			}
+			else if(speed>Math.PI/120){
+				speed = Math.PI/120;
+			}
+			param.a = speed;
+			param.asin = Math.sin(speed);
+			param.acos = Math.cos(speed);
+		}
+		function bind(){
+			document.getElementById("wrapper").addEventListener('mousemove',mouseHandler);
+		}
+//---------------------------------------------------------------------------------------------------------------------------------
+		function Rotate (r,number){
+			//this.index = new Array();
+			//this.r = r;
+			this.r = r;
+			this.number = number;
+			this.speedRate = 20;
+		}
+//-------------------------------------------------------------------------------------------------------------------------------
+		function draw(){
+				var canvas = document.getElementById("test");
+				var context = canvas.getContext('2d');
+				context.clearRect(-300,-300,600,600);
+				context.font = "20px Arial";
+				context.fillStyle = "#CCC";
+				context.fillRect(0,0,5,5);
+				for(var i = 0;i<index.length;i++){
+					var drawindex = index[i];
+					//context.fillRect(drawindex[0],drawindex[1],5,5);
+					context.fillText(i,drawindex[0],drawindex[1]);
+				}
+			}
+//-------------------------------------------------------------------------------------------------------------------------------------
+		Rotate.prototype.random = function(){
+			var sigh = [-1,1];
+			var sighx = sigh[Math.round(Math.random())];
+			return sighx;
+		}
+		Rotate.prototype.randomX = function() {
+			var symbol = this.random();
+			return (Math.round(Math.random()*this.r)*symbol);
+		};
+		Rotate.prototype.randomY = function(x){
+			var r = this.r;
+			var symbol = this.random();
+			var maxy = Math.sqrt(r*r-x*x);
+			var y = Math.round(Math.random()*maxy)*symbol;
+			return y;
+		}
+		Rotate.prototype.getZ = function(x,y){
+			var symbol = this.random();
+			return (Math.sqrt(this.r*this.r-x*x-y*y)*symbol);
+		}
+		Rotate.prototype.init = function(id){
+			var number = this.number;
+			for(var i =0;i<number;i++){
+				var x = this.randomX();
+				var y = this.randomY(x);
+				var z = this.getZ(x,y);
+				index[i] = [x,y,z];
+				//console.log(x*x+y*y+z*z);
+			}
+			//console.log(this.index);
+			createcanvas(600,600,id);
+			param.angle = Math.PI/2;
+			param.angleSin = Math.sin(param.angle);
+			param.angleCos = Math.cos(param.angle);
+			param.a = Math.PI/180;
+			param.asin = Math.sin(param.a);
+			param.acos = Math.cos(param.a);
+			param.timer = setInterval(this.getNewIndex,16);
+		}
+		Rotate.prototype.getNewIndex = function(){
+			//var newindex;
+			//console.log(index[0]);
+			// param.a += param.add;
+			// param.asin = Math.sin(param.a);
+			// param.acos = Math.cos(param.a);
+			for(var i =0;i<index.length;i++){
+				// newindex = index[i];
+				// param.x = newindex[0];
+				// param.y = newindex[1];
+				// param.z = newindex[2];
+				// param.instance = param.x*param.angleSin+param.y*param.angleCos;
+				// param.r = Math.sqrt(param.instance*param.instance+param.z*param.z);
+				// param.x0 = (param.x*param.angleCos*param.angleCos) - (param.y*param.angleSin*param.angleCos);
+				// param.y0 = (param.y*param.angleSin*param.angleSin) - (param.x*param.angleSin*param.angleCos);
+				// var xy2 = param.instance*param.acos-param.z*param.asin;
+				// var dx = param.angleSin*xy2+param.x0;
+				// var dy = param.angleCos*xy2+param.y0;
+				// var dz = param.z*param.acos+param.instance*param.asin;
+				// index[i] = [dx,dy,dz];
+				var id = index[i];
+				var x = id[0];
+				var y = id[1];
+				var z = id[2];
+				var an_sin = param.angleSin;
+				var an_cos = param.angleCos;
+				var sin = param.asin;
+				var cos = param.acos;
+				var instance = x*an_sin+y*an_cos;
+				var r = Math.sqrt(instance*instance+z*z);
+				var x0 = (x*an_cos*an_cos) - (y*an_sin*an_cos);
+				var y0 = (y*an_sin*an_sin) - (x*an_sin*an_cos);
+				var xy2 = instance*cos-z*sin;
+				var dx = an_sin*xy2+x0;
+				var dy = an_cos*xy2+y0;
+				var dz = z*cos+instance*sin;
+				index[i] = [dx,dy,dz];
+				//console.log(dx*dx+dy*dy+dz*dz);
+			}
+			
+			draw();
+		}
+
+		// Rotate.prototype.draw = function(){
+		// 	var canvas = document.getElementById("test");
+		// 	var context = canvas.getContext('2d');
+		// 	context.clearRect(-300,-300,600,600);
+		// 	context.font = "16px";
+		// 	context.fillStyle = "#CCC";
+		// 	for(var i = 0;i<index.length;i++){
+		// 		var drawindex = index[i];
+		// 		//context.fillRect(drawindex[0],drawindex[1],5,5);
+		// 		context.fillText(i,drawindex[0],drawindex[1]);
+		// 	} 
+		// }
+
+
+		window.onload = function(){
+			
+			
+			var test = new Rotate(250,600);
+			test.init("wrapper");
+			bind();
+			//test.getNewIndex();
+			//setInterval(test.getNewIndex,16);
+			// setInterval(function(){
+			// 	param.a = param.a*-1;
+			// 	//param.angle+=Math.PI/8;
+			// },5000);
+		};
+
+	</script>
+</head>
+<body>
+	<div id="wrapper"></div>
+</body>
+</html>
