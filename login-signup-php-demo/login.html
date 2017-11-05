@@ -38,8 +38,8 @@
 			if(spell){
 				
 				var xhr = new XMLHttpRequest();
-				xhr.open("post","login.php");
-				xhr.send(name+"="+value);
+				xhr.open("get","login.php?"+name+"="+value);
+				xhr.send();
 				xhr.onreadystatechange = function(){
 					if(xhr.readyState==4&&xhr.status==200){
 						var res = xhr.responseText;
