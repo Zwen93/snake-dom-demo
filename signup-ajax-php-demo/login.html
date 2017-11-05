@@ -24,8 +24,11 @@
 		#signup_div #signup_form #submit{width:25%;background-color: #eb7350;height:35px;border:1px solid #CCC;border-radius: 5px;margin-left:35%;font-size:22px;}
 		#signup_div #close{position:absolute;top:-1px;right:-1px;width:40px;height:25px;line-height:20px;border:1px solid #CCC; background-color: #CCC;border-bottom-left-radius: 5px;font-size:20px;outline: none;border-top:1px solid #eb7350;border-right:1px solid #eb7350;}
 		#signup_div #close:hover{background-color: #eb7350;}
+		#show_num{display: none;}
+		#numPicture{width:120px;height:40px;margin-left: 50px;}
 	</style>
 	<script type="text/javascript">
+		var numcode;
 		function check(){
 			var that = this;
 			var parent = that.parentNode.parentNode;
@@ -36,12 +39,24 @@
 			var spell = spellCheck(name,value);
 			console.log(spell);
 			if(spell){
-				
-				var xhr = new XMLHttpRequest();
-				var src = "login.php?"+name+"="+value;
-				xhr.open("get",src);
-				xhr.send();
-				xhr.onreadystatechange = function(){
+				if(name=="number"){
+					if(value==numcode){
+						parent.getElementsByClassName("yes")[0].style.display = "inline-block";
+						parent.getElementsByClassName("no")[0].style.display = "none";
+						parent.getElementsByClassName("message")[0].innerHTML = "";
+					}
+					else{
+						parent.getElementsByClassName("yes")[0].style.display = "none";
+						parent.getElementsByClassName("no")[0].style.display = "inline-block";
+						parent.getElementsByClassName("message")[0].innerHTML = "验证码错误";
+					}
+				}
+				else{
+					var xhr = new XMLHttpRequest();
+					var src = "login.php?"+name+"="+value;
+					xhr.open("get",src);
+					xhr.send();
+					xhr.onreadystatechange = function(){
 					if(xhr.readyState==4&&xhr.status==200){
 						var res = xhr.responseText;
 						console.log(res);
@@ -62,6 +77,7 @@
 						parent.getElementsByClassName("message")[0].innerHTML = "检查中";
 					}
 
+				  }
 				}
 			}
 			else{
@@ -110,7 +126,40 @@
 			}
 			return pass;
 		}
-		
+		function randomPicture(){
+			var numberarr = new Array();
+			var sign = [-1,1];
+			for(var i=0;i<4;i++){
+				numberarr[i]=Math.round(Math.random()*9);
+			}
+			numcode = numberarr.join('');
+			console.log(numcode);
+			var can = document.createElement("canvas");
+			can.style.width = "360px";
+			can.style.height = "120px";
+			var context = can.getContext("2d");
+			context.font = "90px Verdana";
+			context.fillStyle = "#CCC";
+			context.fillRect(0,0,360,120);
+			for(var j =0;j<4;j++){
+				var angle = sign[Math.round(Math.random())]*Math.PI*Math.random()/6;
+				var num = numberarr[j];
+				context.rotate(angle);
+				context.fillStyle = randomColor();
+				context.fillText(num,15,90);
+				context.rotate(-angle);
+				context.translate(75,0);
+			} 
+			context.translate(-300,0);
+			var src = can.toDataURL();
+			document.getElementById("numPicture").setAttribute("src",src);
+		}
+		function randomColor(){
+			var r = Math.round(Math.random()*255);
+			var g = Math.round(Math.random()*255);
+			var b = Math.round(Math.random()*255);
+			return "rgb("+r+","+g+","+b+")";
+		}
 		window.onload = function(){
 			var inputs = document.getElementsByTagName("input");
 			for(var i =0;i<inputs.length;i++){
@@ -119,6 +168,15 @@
 			}
 			document.getElementById("signup").addEventListener("click",function(){document.getElementById("signup_div").style.display="block";});
 			document.getElementById("close").addEventListener("click",function(){document.getElementById("signup_div").style.display="none";});
+			document.getElementById("shownumber").addEventListener("click",function(){
+				var e = e||window.event;
+				e.preventDefault();
+				this.style.display="none";
+				this.parentNode.parentNode.getElementsByTagName("input")[0].removeAttribute("disabled");
+				document.getElementById("show_num").style.display="table-row";
+				randomPicture();
+				document.getElementById("numPicture").addEventListener("click",randomPicture);
+			});
 		}
 	</script>
 </head>
@@ -154,8 +212,15 @@
 					</tr>
 					<tr>
 						<td class="option">验证码：</td>
-						<td><input type="text" name="number" placeholder="输入验证码"></td>
-						<td class="info"><span class="yes">√</span><span class="no">×</span><span class="message"></span></td>
+						<td><input type="text" name="number" placeholder="输入验证码" disabled="true"></td>
+						<td class="info"><span class="yes">√</span><span class="no">×</span><span class="message"></span><button id="shownumber">获取验证码</button></td>
+					</tr>
+					<tr id="show_num">
+						<td></td>
+						<td>
+							<img src="" id="numPicture">
+						</td>
+						<td></td>
 					</tr>
 					<tr>
 						<td colspan="3"><button id="submit">注册</button></td>
