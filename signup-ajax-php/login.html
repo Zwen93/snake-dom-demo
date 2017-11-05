@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>login</title>
+	<style>
+		a{text-decoration:none;color:black;}
+		input{border-radius: 4px;height:20px;line-height: 20px;font-size:18px;outline: 0;padding-left:5px; }
+		#nav-header{width:100%;padding:0 10%;height:50px;line-height: 50px;vertical-align: middle;}
+		#nav-header a{padding:10px 2%;text-align: center;font-size:20px;height:50px;line-height: 50px;}
+		#nav-header a:hover{border-left: 2px solid #CCC;border-right:2px solid #CCC;color:#eb7350;background-color: #333;}
+		#nav-header #logo,#nav-header #logo:hover{margin-right:10%;color:#000;border:none;background-color: #FFF;font:26px bold;font-style:italic;}
+		#nav-header #login,#nav-header #signup{font-size: 16px;padding: 0;}
+		#nav-header #login:hover,#nav-header #signup:hover{border:none;background-color: #FFF;cursor: pointer;}
+		#nav-header #login{margin-left:6%;}
+		#signup_div{width:40%;position: absolute;left:30%;top:30%;border: 2px solid #eb7350;box-shadow: 5px 5px 10px #CCC;}
+		#signup_div #signup_form{width:80%;margin:20px auto;}
+		#signup_div #signup_form tr{margin:10px 0;height:40px;line-height: 40px;font-size:18px;vertical-align: middle;}
+		#signup_div #signup_form .option{width:80px;}
+		#signup_div #signup_form .info{width:25%;}
+		#signup_div #signup_form .info .yes{font-size:12px;width:14px;height:14px;border-radius: 7px;background-color: green;display: inline-block;line-height: 14px;text-align: center;color:#FFF;display: none;margin-left: 5px;}
+		#signup_div #signup_form .info .no{font-size:12px;width:14px;height:14px;border-radius: 7px;background-color: red;display: inline-block;line-height: 14px;text-align: center;color:#FFF;display: none;margin-left: 5px;}
+		#signup_div #signup_form .info .message{font-size:14px;height:14px;color:#333;padding-left:5px;}
+		#signup_div #signup_form #submit{width:25%;background-color: #eb7350;height:35px;border:1px solid #CCC;border-radius: 5px;margin-left:35%;font-size:22px;}
+		#signup_div #close{position:absolute;top:-1px;right:-1px;width:40px;height:25px;line-height:20px;border:1px solid #CCC; background-color: #CCC;border-bottom-left-radius: 5px;font-size:20px;outline: none;border-top:1px solid #eb7350;border-right:1px solid #eb7350;}
+		#signup_div #close:hover{background-color: #eb7350;}
+	</style>
+	<script type="text/javascript">
+		function check(){
+			var that = this;
+			var parent = that.parentNode.parentNode;
+			var name = that.name;
+			var value = that.value;
+			var pass = false;
+			//console.log(parent,name,value,value.length);
+			var spell = spellCheck(name,value);
+			console.log(spell);
+			if(spell){
+				
+				var xhr = new XMLHttpRequest();
+				var src = "login.php?"+name+"="+value;
+				xhr.open("get",src);
+				xhr.send();
+				xhr.onreadystatechange = function(){
+					if(xhr.readyState==4&&xhr.status==200){
+						var res = xhr.responseText;
+						console.log(res);
+						if(res==true){
+							parent.getElementsByClassName("yes")[0].style.display = "inline-block";
+							parent.getElementsByClassName("no")[0].style.display = "none";
+							parent.getElementsByClassName("message")[0].innerHTML = (name=="number")?"":"可用";
+						}
+						else{
+							parent.getElementsByClassName("no")[0].style.display = "inline-block";
+							parent.getElementsByClassName("yes")[0].style.display = "none";
+							parent.getElementsByClassName("message")[0].innerHTML = (name=="number")?"验证码错误":"已被注册";
+						}
+					}
+					else{
+						parent.getElementsByClassName("yes")[0].style.display = "none";
+						parent.getElementsByClassName("no")[0].style.display = "none";
+						parent.getElementsByClassName("message")[0].innerHTML = "检查中";
+					}
+
+				}
+			}
+			else{
+				if(value.length!=0){
+					parent.getElementsByClassName("no")[0].style.display = "inline-block";
+					parent.getElementsByClassName("yes")[0].style.display = "none";
+					parent.getElementsByClassName("message")[0].innerHTML = (name=="number")?"验证码错误":"格式错误";
+				}
+				else{
+					parent.getElementsByClassName("no")[0].style.display = "none";
+					parent.getElementsByClassName("yes")[0].style.display = "none";
+					parent.getElementsByClassName("message")[0].innerHTML = "";
+				}
+			}
+		}
+		function spellCheck(name,value){
+			var pass;
+			switch(name){
+				case "name":
+				if(value.length>2&&value.length<11&&value.match(/[a-zA-Z]/g)!==null&&value.match(/[0-9a-zA-Z]/g)!==null&&value.match(/[0-9a-zA-Z]/g).length===value.length){
+					pass = true;
+				}
+				else pass = false;
+				break;
+				case "email":
+				var first = value.match(/^[0-9a-zA-Z]+\@/g);
+				var second = value.match(/\@[0-9a-zA-Z]+\./g);
+				var third = value.match(/\.[0-9a-zA-Z]+$/g);
+				var len1 = value.match(/\@/g);
+				var len2 = value.match(/\./g);
+				if(!first||!second||!third||first.length!==1||second.length!==1||third.length!==1||!len1||!len2||len1.length!==1||len2.length!==1){
+					pass = false;
+				}
+				else pass = true;
+				// first = first[0].replace(/\@/,"");
+				// second = second[0].replace(/\@/,"");
+				// second = second.replace(/\./,"");
+				// third = third[0].replace(/\./,"");
+				// console.log(first,second,third);
+				break;
+				case "number":
+				if(value.length===4&&value.match(/[0-9]/g).length===4){
+					pass = true;
+				}
+				else pass = false;
+			}
+			return pass;
+		}
+		
+		window.onload = function(){
+			var inputs = document.getElementsByTagName("input");
+			for(var i =0;i<inputs.length;i++){
+						inputs[i].addEventListener("input",check);
+						inputs[i].addEventListener("propertychange",check);
+			}
+			document.getElementById("signup").addEventListener("click",function(){document.getElementById("signup_div").style.display="block";});
+			document.getElementById("close").addEventListener("click",function(){document.getElementById("signup_div").style.display="none";});
+		}
+	</script>
+</head>
+<body>
+	<nav id="nav-header">
+		<a href="" id="logo">互联网论坛</a>
+		<a href="">导航1</a>
+		<a href="">导航2</a>
+		<a href="">导航3</a>
+		<a href="">导航4</a>
+		<a href="">导航5</a>
+		<a id="login">登录 |</a>
+		<a id="signup">注册</a>
+	</nav>
+	<div id="signup_div">
+		<form id="signup_form">
+			<table>
+				<thead>
+					<tr>
+						<th colspan="3">注册论坛</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="option">用户名：</td>
+						<td ><input type="text" name="name" placeholder="3-10位字母和数字组合"></td>
+						<td class="info"><span class="yes">√</span><span class="no">×</span><span class="message"></span></td>
+					</tr>
+					<tr>
+						<td class="option">邮箱：</td>
+						<td><input type="email" name="email" placeholder="常用邮箱地址"></td>
+						<td class="info"><span class="yes">√</span><span class="no">×</span><span class="message"></span></td>
+					</tr>
+					<tr>
+						<td class="option">验证码：</td>
+						<td><input type="text" name="number" placeholder="输入验证码"></td>
+						<td class="info"><span class="yes">√</span><span class="no">×</span><span class="message"></span></td>
+					</tr>
+					<tr>
+						<td colspan="3"><button id="submit">注册</button></td>
+					</tr>
+				</tbody>
+			</table>
+		</form>
+		<button id="close">×</button>
+	</div>
+</body>
+</html>
