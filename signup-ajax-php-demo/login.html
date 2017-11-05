@@ -119,7 +119,7 @@
 				// console.log(first,second,third);
 				break;
 				case "number":
-				if(value.length===4&&value.match(/[0-9]/g).length===4){
+				if(value.length===4&&value.match(/[0-9]/g)!=null&&value.match(/[0-9]/g).length===4){
 					pass = true;
 				}
 				else pass = false;
@@ -133,6 +133,13 @@
 				numberarr[i]=Math.round(Math.random()*9);
 			}
 			numcode = numberarr.join('');
+			var input = document.getElementById("number_input");
+			var parent = input.parentNode.parentNode;
+			if(input.value.length!=0&&input.value!=numcode){
+				parent.getElementsByClassName("yes")[0].style.display = "none";
+				parent.getElementsByClassName("no")[0].style.display = "inline-block";
+				parent.getElementsByClassName("message")[0].innerHTML = "验证码错误";
+			}
 			console.log(numcode);
 			var can = document.createElement("canvas");
 			can.style.width = "360px";
@@ -212,7 +219,7 @@
 					</tr>
 					<tr>
 						<td class="option">验证码：</td>
-						<td><input type="text" name="number" placeholder="输入验证码" disabled="true"></td>
+						<td><input type="text" name="number" placeholder="输入验证码" disabled="true" id="number_input"></td>
 						<td class="info"><span class="yes">√</span><span class="no">×</span><span class="message"></span><button id="shownumber">获取验证码</button></td>
 					</tr>
 					<tr id="show_num">
