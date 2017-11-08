@@ -55,29 +55,32 @@
 					var xhr = new XMLHttpRequest();
 					var src = "login.php?"+name+"="+value;
 					xhr.open("get",src);
-					xhr.send();
 					xhr.onreadystatechange = function(){
-					if(xhr.readyState==4&&xhr.status==200){
-						var res = xhr.responseText;
-						console.log(res);
-						if(res==true){
-							parent.getElementsByClassName("yes")[0].style.display = "inline-block";
-							parent.getElementsByClassName("no")[0].style.display = "none";
-							parent.getElementsByClassName("message")[0].innerHTML = (name=="number")?"":"可用";
-						}
-						else{
-							parent.getElementsByClassName("no")[0].style.display = "inline-block";
-							parent.getElementsByClassName("yes")[0].style.display = "none";
-							parent.getElementsByClassName("message")[0].innerHTML = (name=="number")?"验证码错误":"已被注册";
-						}
-					}
-					else{
-						parent.getElementsByClassName("yes")[0].style.display = "none";
-						parent.getElementsByClassName("no")[0].style.display = "none";
-						parent.getElementsByClassName("message")[0].innerHTML = "检查中";
-					}
+						console.log("checking");
+						if(xhr.readyState==4&&xhr.status==200){
+								var res = xhr.responseText;
+								console.log(res);
+								if(res==true){
+									parent.getElementsByClassName("yes")[0].style.display = "inline-block";
+									parent.getElementsByClassName("no")[0].style.display = "none";
+									parent.getElementsByClassName("message")[0].innerHTML = "可用";
+									}
+								else{
+									parent.getElementsByClassName("no")[0].style.display = "inline-block";
+									parent.getElementsByClassName("yes")[0].style.display = "none";
+									parent.getElementsByClassName("message")[0].innerHTML = "已被注册";
+									}
+					 	}else{
+					 			parent.getElementsByClassName("yes")[0].style.display = "none";
+								parent.getElementsByClassName("no")[0].style.display = "none";
+								parent.getElementsByClassName("message")[0].innerHTML = "检查中";
+					 	}
 
-				  }
+				      };
+						
+				xhr.send();
+					
+					
 				}
 			}
 			else{
